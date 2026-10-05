@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<!--
+  Zielseite für geteilte Trainingspläne: https://…/plan#1.<Inhalt>
+  Der Plan steckt im Teil nach dem "#" – den schickt der Browser nicht an den Server. Die Seite packt ihn hier
+  im Browser aus, zeigt ihn und öffnet die App (satzwerk://plan?d=…). Format wie in domain/PlanLink.kt.
+  Liegt im Repo gameons.github.io unter satzwerk/plan.html (siehe store/play-console.md, Abschnitt 6).
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Satzwerk – Trainingsplan</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: #fff;
+    font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 0% 100%, rgba(63, 58, 184, 0.55), transparent 55%),
+      radial-gradient(circle at 80% 0%, rgba(74, 69, 200, 0.35), transparent 50%),
+      #0B0D17;
+    background-attachment: fixed;
+  }
+  main { max-width: 520px; margin: 0 auto; padding: 28px 20px 40px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .tile { width: 44px; height: 44px; border-radius: 12px; background: #3F3AB8; overflow: hidden; flex: none; }
+  .tile svg { display: block; width: 44px; height: 44px; }
+  .brand b { font-size: 20px; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 28px 0 6px; }
+  .sub { color: rgba(255, 255, 255, 0.65); margin: 0 0 20px; }
+  .plan { background: rgba(255, 255, 255, 0.07); border-radius: 20px; padding: 16px 18px; margin-bottom: 12px; }
+  .plan h2 { font-size: 18px; margin: 0; }
+  .plan .meta { color: rgba(255, 255, 255, 0.6); font-size: 13px; margin: 2px 0 10px; }
+  .plan .notes { color: rgba(255, 255, 255, 0.6); font-size: 13px; margin: 0 0 10px; white-space: pre-wrap; }
+  .plan ul { list-style: none; margin: 0; padding: 0; }
+  .plan li { padding: 3px 0; font-size: 15px; overflow-wrap: anywhere; }
+  .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  a.button {
+    display: block; text-align: center; text-decoration: none; font-weight: 600; font-size: 16px;
+    padding: 16px; border-radius: 999px;
+  }
+  a.primary { background: #C3C0FF; color: #221D8F; }
+  a.secondary { color: #C3C0FF; border: 1px solid rgba(195, 192, 255, 0.5); }
+  .note { color: rgba(255, 255, 255, 0.55); font-size: 13px; line-height: 1.5; margin-top: 22px; }
+  .note a { color: rgba(255, 255, 255, 0.75); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <div class="tile">
+      <svg viewBox="18 18 72 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="translate(54 54) rotate(-30) scale(0.8) translate(-54 -54)" fill="#FFFFFF">
+          <path d="M38,51.5h32v5h-32z M20,52h4v4h-4z M84,52h4v4h-4z M33,38h3a2,2 0,0 1,2 2v28a2,2 0,0 1,-2 2h-3a2,2 0,0 1,-2 -2v-28a2,2 0,0 1,2 -2z M72,38h3a2,2 0,0 1,2 2v28a2,2 0,0 1,-2 2h-3a2,2 0,0 1,-2 -2v-28a2,2 0,0 1,2 -2z M26,44h2a2,2 0,0 1,2 2v16a2,2 0,0 1,-2 2h-2a2,2 0,0 1,-2 -2v-16a2,2 0,0 1,2 -2z M80,44h2a2,2 0,0 1,2 2v16a2,2 0,0 1,-2 2h-2a2,2 0,0 1,-2 -2v-16a2,2 0,0 1,2 -2z"/>
+        </g>
+      </svg>
+    </div>
+    <b>Satzwerk</b>
+  </div>
+
+  <h1 id="title"></h1>
+  <p class="sub" id="sub"></p>
+  <div id="plans"></div>
+
+  <div class="actions">
+    <a class="button primary" id="open" hidden></a>
+    <a class="button secondary" id="store" href="https://play.google.com/store/apps/details?id=io.github.gameons.satzwerk"></a>
+  </div>
+  <p class="note" id="note"></p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var PACKAGE = "io.github.gameons.satzwerk";
+  var german = (navigator.language || "de").toLowerCase().indexOf("de") === 0;
+  document.documentElement.lang = german ? "de" : "en";
+  var t = german ? {
+    onePlan: "Trainingsplan für Satzwerk",
+    plans: function (n) { return n + " Trainingspläne für Satzwerk"; },
+    sub: "Jemand hat das mit dir geteilt. In Satzwerk kannst du es mit einem Tipp übernehmen.",
+    noPlan: "Hier steckt kein Plan drin",
+    noPlanSub: "Der Link ist unvollständig oder stammt aus einer neueren Version von Satzwerk. Bitte lass ihn dir noch einmal schicken.",
+    meta: function (x, s) { return x + (x === 1 ? " Übung" : " Übungen") + " · " + s + (s === 1 ? " Satz" : " Sätze"); },
+    reps: " Wdh.",
+    open: "In Satzwerk öffnen",
+    store: "Satzwerk bei Google Play",
+    desktop: "Satzwerk gibt es für Android. Öffne diesen Link auf deinem Handy, um den Plan zu übernehmen.",
+    privacy: "Der Plan steckt im Link selbst. Diese Seite liest ihn nur hier in deinem Browser und schickt ihn nirgendwohin.",
+    privacyLink: "Datenschutz", privacyHref: "https://gameons.github.io/satzwerk-legal/datenschutz"
+  } : {
+    onePlan: "Workout routine for Satzwerk",
+    plans: function (n) { return n + " workout routines for Satzwerk"; },
+    sub: "Someone shared this with you. In Satzwerk you can add it with one tap.",
+    noPlan: "There's no routine in here",
+    noPlanSub: "The link is incomplete or comes from a newer version of Satzwerk. Please ask for it again.",
+    meta: function (x, s) { return x + (x === 1 ? " exercise" : " exercises") + " · " + s + (s === 1 ? " set" : " sets"); },
+    reps: " reps",
+    open: "Open in Satzwerk",
+    store: "Satzwerk on Google Play",
+    desktop: "Satzwerk is an Android app. Open this link on your phone to add the routine.",
+    privacy: "The routine is inside the link itself. This page only reads it here in your browser and sends it nowhere.",
+    privacyLink: "Privacy", privacyHref: "https://gameons.github.io/satzwerk-legal/privacy"
+  };
+
+  function byId(id) { return document.getElementById(id); }
+  function element(tag, className, text) {
+    var e = document.createElement(tag);
+    if (className) e.className = className;
+    if (text != null) e.textContent = text; // nie innerHTML: der Inhalt kommt von Fremden
+    return e;
+  }
+  function clock(seconds) {
+    var m = Math.floor(seconds / 60), s = seconds % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  async function read(payload) {
+    var match = /^(\d{1,3})\.([A-Za-z0-9_-]+)$/.exec(payload);
+    if (!match || match[1] !== "1" || match[2].length > 6000 || !("DecompressionStream" in window)) return null;
+    var base64 = match[2].replace(/-/g, "+").replace(/_/g, "/");
+    var binary = atob(base64 + "===".slice((base64.length + 3) % 4));
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+    var text = await new Response(stream).text();
+    if (text.length > 100000) return null;
+    var plans = (JSON.parse(text).p || []).slice(0, 12).filter(function (p) {
+      return p && typeof p.n === "string" && p.n.trim() && Array.isArray(p.x) && p.x.length;
+    });
+    return plans.length ? plans : null;
+  }
+
+  function show(plans) {
+    byId("title").textContent = plans.length === 1 ? t.onePlan : t.plans(plans.length);
+    byId("sub").textContent = t.sub;
+    plans.forEach(function (plan) {
+      var exercises = plan.x.slice(0, 40).filter(function (x) { return x && typeof x.n === "string" && x.n.trim(); });
+      var sets = exercises.reduce(function (sum, x) { return sum + (x.s > 0 ? Math.min(x.s, 20) : 1); }, 0);
+      var card = element("div", "plan");
+      card.appendChild(element("h2", null, plan.n.trim().slice(0, 100)));
+      card.appendChild(element("div", "meta", t.meta(exercises.length, sets)));
+      if (typeof plan.o === "string" && plan.o.trim()) card.appendChild(element("p", "notes", plan.o.trim().slice(0, 500)));
+      var list = element("ul");
+      exercises.forEach(function (x) {
+        var line = (x.s > 0 ? Math.min(x.s, 20) : 1) + " × " + x.n.trim().slice(0, 100);
+        if (x.r > 0) line += " · " + Math.min(x.r, 999) + t.reps;
+        if (x.d > 0) line += " · " + clock(Math.min(x.d, 86400));
+        list.appendChild(element("li", null, line));
+      });
+      card.appendChild(list);
+      byId("plans").appendChild(card);
+    });
+  }
+
+  var payload = location.hash.slice(1);
+  byId("store").textContent = t.store;
+  var note = byId("note");
+  note.textContent = t.privacy + " ";
+  var privacy = element("a", null, t.privacyLink);
+  privacy.href = t.privacyHref;
+  note.appendChild(privacy);
+
+  read(payload).catch(function () { return null; }).then(function (plans) {
+    if (!plans) {
+      byId("title").textContent = t.noPlan;
+      byId("sub").textContent = t.noPlanSub;
+      return;
+    }
+    show(plans);
+    if (/Android/i.test(navigator.userAgent)) {
+      var open = byId("open");
+      open.textContent = t.open;
+      // Öffnet die App; ist sie nicht installiert, führt der Browser zum Play Store
+      open.href = "intent://plan?d=" + payload + "#Intent;scheme=satzwerk;package=" + PACKAGE + ";end";
+      open.hidden = false;
+    } else {
+      byId("sub").textContent = t.desktop;
+    }
+  });
+})();
+</script>
+</body>
+</html>
