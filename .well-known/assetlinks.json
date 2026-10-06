@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.gameons.satzwerk",
+      "sha256_cert_fingerprints": [
+        "81:6D:E6:C9:53:08:23:2D:FD:24:C6:A6:F9:E1:0E:45:0B:9B:9A:B3:2F:33:68:F1:06:39:11:C0:15:7F:36:03",
+        "9B:D1:3D:4B:56:7C:F1:9C:F3:55:DA:1D:96:31:D8:CD:24:82:FD:29:8D:92:57:EF:B2:52:17:6E:2B:EB:7A:E9"
+      ]
+    }
+  }
+]
