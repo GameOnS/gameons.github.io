@@ -92,7 +92,8 @@
     store: "Atlyra bei Google Play",
     desktop: "Atlyra gibt es für Android. Öffne diesen Link auf deinem Handy, um den Plan zu übernehmen.",
     privacy: "Der Plan steckt im Link selbst. Diese Seite liest ihn nur hier in deinem Browser und schickt ihn nirgendwohin.",
-    privacyLink: "Datenschutz", privacyHref: "https://gameons.github.io/atlyra-legal/datenschutz"
+    privacyLink: "Datenschutz", privacyHref: "https://gameons.github.io/atlyra-legal/datenschutz",
+    imprintLink: "Impressum", imprintHref: "https://gameons.github.io/atlyra-legal/impressum"
   } : {
     onePlan: "Workout routine for Atlyra",
     plans: function (n) { return n + " workout routines for Atlyra"; },
@@ -105,7 +106,8 @@
     store: "Atlyra on Google Play",
     desktop: "Atlyra is an Android app. Open this link on your phone to add the routine.",
     privacy: "The routine is inside the link itself. This page only reads it here in your browser and sends it nowhere.",
-    privacyLink: "Privacy", privacyHref: "https://gameons.github.io/atlyra-legal/privacy"
+    privacyLink: "Privacy", privacyHref: "https://gameons.github.io/atlyra-legal/privacy",
+    imprintLink: "Legal notice", imprintHref: "https://gameons.github.io/atlyra-legal/imprint"
   };
 
   function byId(id) { return document.getElementById(id); }
@@ -165,6 +167,10 @@
   var privacy = element("a", null, t.privacyLink);
   privacy.href = t.privacyHref;
   note.appendChild(privacy);
+  note.appendChild(document.createTextNode(" · "));
+  var imprint = element("a", null, t.imprintLink);
+  imprint.href = t.imprintHref;
+  note.appendChild(imprint);
 
   read(payload).catch(function () { return null; }).then(function (plans) {
     if (!plans) {
